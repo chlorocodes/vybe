@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -e
+set -x
+
+nvmScript="~/.nvm/nvm.sh"
+serverRoot="~/vybe"
+user=$VYBE_USER
+host=$VYBE_HOST
+
+# Build server/website
+npm run clean
+npm run build
+
+# Send generated server/website code + configs to remote server
+scp -r dist package.json package-lock.json $user@$host:$serverRoot
+scp prisma/schema.prisma $user@$host:$serverRoot/prisma
+
+# Install latest dependencies, run the latest db migrations, and restart the remote server
+ssh -t $user@$host << EOF
+  source $nvmScript
+  cd $serverRoot
+
+  echo -e "\n\n======================================================="
+  echo "Installing latest dependencies..."
+  echo "======================================================="
+  npm install
+
+  echo -e "\n\n======================================================="
+  echo "Running latest DB migrations..."
+  echo "======================================================="
+  npx prisma generate
+  npm run migrate:deploy
+
+  echo -e "\n\n======================================================="
+  echo "Restarting server..."
+  echo "======================================================="
+  npm run restart
+EOF

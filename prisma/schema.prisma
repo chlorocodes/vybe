@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model State {
+  id             String @id @default(uuid()) @map("id")
+  currentStoryId String @default("") @map("current_story_id")
+  lastAuthorId   String @default("") @map("last_author_id")
+  lastWord       String @default("") @map("last_word")
+
+  @@map("state")
+}
+
+model Story {
+  id         String   @id @default(uuid()) @map("id")
+  name       String   @default("") @map("name")
+  isComplete Boolean  @default(false) @map("is_complete")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  words Word[]
+
+  @@map("stories")
+}
+
+model Author {
+  id        String   @id @default("1152770278582124685") @map("id")
+  username  String   @default("Graype") @map("username")
+  avatar    String   @map("avatar")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  words Word[]
+
+  @@map("authors")
+}
+
+model Word {
+  id               String   @id @default(uuid()) @map("id")
+  word             String   @map("word")
+  storyId          String   @map("story_id")
+  authorId         String   @map("author_id")
+  discordMessageId String   @map("discord_message_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  story  Story  @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@map("words")
+}
