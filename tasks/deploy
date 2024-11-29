@@ -13,6 +13,7 @@ npm run clean
 npm run build
 
 # Send generated server/website code + configs to remote server
+ssh $user@$host "mkdir -p $serverRoot/prisma"
 scp -r dist package.json package-lock.json $user@$host:$serverRoot
 scp prisma/schema.prisma $user@$host:$serverRoot/prisma
 

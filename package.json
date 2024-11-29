@@ -6,9 +6,11 @@
     "clean": "rm -rf dist",
     "build": "tsc",
     "dev": "nodemon src/index.ts",
-    "start": "node dist/index.js",
+    "start": "pm2 start dist/index.js -n vybe",
+    "restart": "pm2 restart vybe",
     "migrate": "prisma migrate dev",
-    "migrate:deploy": "prisma migrate deploy"
+    "migrate:deploy": "prisma migrate deploy",
+    "deploy": "./tasks/deploy"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
@@ -24,6 +26,7 @@
   "dependencies": {
     "@prisma/client": "^6.0.0",
     "discord.js": "^14.16.3",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "pm2": "^5.4.3"
   }
 }
