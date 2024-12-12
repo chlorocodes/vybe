@@ -1,5 +1,6 @@
 import { Client, GatewayIntentBits, Message, TextChannel } from 'discord.js'
 import { OneWordStoryService } from './services/one-word-stories'
+import { translate } from './commands/translate'
 
 export const settings = {
   id: process.env.VYBE_USER_ID as string,
@@ -18,7 +19,7 @@ export const settings = {
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.MessageContent
   ],
-  commands: ['!story', '!end', '!reset'],
+  commands: ['!story', '!end', '!reset', '!translate'],
   adminCommands: ['!on', '!off'],
   adminPrefix: '!!'
 }
@@ -28,6 +29,7 @@ export class Vybe {
   private isOn = true
   private client: Client = new Client({ intents: this.settings.intents })
   private stories = OneWordStoryService.shared
+  private translator = OneWordStoryService.shared
 
   private setupEventListeners() {
     this.client.once('ready', this.onReady.bind(this))
@@ -44,7 +46,7 @@ export class Vybe {
         ? process.env.DEBUG_STORY_CHANNEL_ID
         : process.env.ONE_WORD_STORY_CHANNEL_ID
 
-    if (message.author.bot || message.channel.id !== storyChannelId) {
+    if (message.author.bot) {
       return
     }
 
@@ -53,8 +55,12 @@ export class Vybe {
       ...this.settings.adminCommands
     ]
 
-    if (allCommands.some((cmd) => cmd === message.cleanContent)) {
+    if (allCommands.some((cmd) => message.cleanContent.startsWith(cmd))) {
       this.onCommand(message)
+      return
+    }
+
+    if (message.channel.id !== storyChannelId) {
       return
     }
 
@@ -105,6 +111,10 @@ export class Vybe {
 
     if (commandName === '!reset') {
       return this.stories.reset(message)
+    }
+
+    if (commandName.startsWith('!translate')) {
+      return translate(message)
     }
   }
 
